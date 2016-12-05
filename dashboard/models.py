@@ -1,5 +1,9 @@
 from django.db import models
-
+class WeatherStation(models.Model):
+    wid = models.CharField(max_length=200)
+    name = models.CharField(max_length=200)
+    location_lat = models.FloatField(default=0)
+    location_lon = models.FloatField(default=0)
 
 class BikeStation(models.Model): 
     name = models.CharField(max_length=200)

@@ -1,14 +1,14 @@
 from django.shortcuts import render
 from django.http import HttpResponse
 from django.contrib.auth.models import User, Group
-from dashboard.models import BikeStation, BikeStationData, MicroService,MicroServiceLogEntry
+from dashboard.models import WeatherStation, BikeStation, BikeStationData, MicroService,MicroServiceLogEntry
 from rest_framework import viewsets
 from dashboard.serializers import MicroServiceSerializer, MicroServiceLogEntrySerializer, BikeStationSerializer, BikeStationDataSerializer
-
+from pprint import pprint
 
 def index(request):
     context = {}
-    return render(request, 'dash/welcome.html', context)
+    return render(request, 'welcome.html', context)
 def about(request):
     dataset1 = BikeStationData.objects.filter(station=BikeStation.objects.first()).order_by("-pub_date").values_list("used", flat=True)
     dataset2 = BikeStationData.objects.filter(station=BikeStation.objects.last()).order_by("-pub_date").values_list("used", flat=True)
@@ -22,28 +22,103 @@ def about(request):
                "data2" : dataset2,
                
                }
-    return render(request, 'dash/about.html', context)
+    return render(request, 'about.html', context)
+def stationen(request):
+    stationen = BikeStation.objects.all()
+    wstationen = WeatherStation.objects.all()
+    context = {
+            "stationen" : stationen,
+            "wstationen" : wstationen,
+            };
+    return render(request, 'stationen.html', context)
+def station_details(request):
+    pprint(request.POST)
+    if request.POST["station"]:
+        try:
+            station = BikeStation.objects.get(id=int(request.POST["station"]));
+            dataset1 = BikeStationData.objects.filter(station=station).order_by("-pub_date").values_list("used", flat=True)
+            pprint(dataset1)
+        except:
+            station = BikeStation.objects.first()
+    else:
+        station = BikeStation.objects.first()
+        
+    context = {
+            "station" : station,
+            "dataset" : dataset1
+            };
+    return render(request, 'station_details.html', context)
+def wstation_details(request):
+    pprint(request.POST)
+    if request.POST["station"]:
+        try:
+            station = WeatherStation.objects.get(id=int(request.POST["station"]));
+           
+        except:
+            station = WeatherStation.objects.first()
+    else:
+        station = WeatherStation.objects.first()
+        
+    context = {
+            "station" : station,
+            };
+    return render(request, 'wstation_details.html', context)
+
+def statistiken(request):
+    context = {}
+    return render(request, 'statistiken.html', context)
+def station(request, mid):
+    try:
+        station =    BikeStation.objects.get(id=id);
+        wstation =    WeatherStation.objects.first();
+    except:
+        station = BikeStation.objects.first()
+        wstation =    WeatherStation.objects.first();
+    
+    dataset1 = BikeStationData.objects.filter(station=station).order_by("-pub_date").values_list("used", flat=True)
+  
+    context = {'station' : station,
+               'wstation' : wstation,
+               'stationsdata' : dataset1,
+               }
+    return render(request, 'station.html', context)
+
+def wstation(request, mid):
+    try:
+        station =    WeatherStation.objects.get(id=id);
+    except:
+        station = WeatherStation.objects.first()
+    
+   
+    context = {'station' : station,
+               }
+    return render(request, 'wstation.html', context)
 
 def maps(request):
     context = {}
-    return render(request, 'dash/maps.html', context)
+    return render(request, 'maps.html', context)
 
 def graphs(request):
     context = {}
-    return render(request, 'dash/graphs.html', context)
+    return render(request, 'graphs.html', context)
 
 def dash(request):
-    context = {"title" : "Dashboard" }
-    return render(request, 'dash/dash.html', context)
+    stationen = BikeStation.objects.all()
+    wstationen = WeatherStation.objects.all()
+    context = {
+            "stationen" : stationen,
+            "wstationen" : wstationen,
+            };
+    return render(request, 'dash.html', context)
 
 def services(request):
     
     context = {"services" : MicroService.objects.all()}
-    return render(request, 'dash/services.html', context)
+    return render(request, 'services.html', context)
 
 def servicelog(request):
     context = {"entries" : MicroServiceLogEntry.objects.all().order_by("-pub_date")}
-    return render(request, 'dash/servicelog.html', context)
+    return render(request, 'servicelog.html', context)
 
 class BikeStationViewSet(viewsets.ModelViewSet):
     """
