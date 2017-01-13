@@ -1,0 +1,777 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% load template_extras %}
+{%block content%}
+						<div class="row 200%">
+							<div class="8u 12u$(medium)">
+								<div id="content">
+
+									<!-- Content -->
+										<article>
+
+										
+												<section style="margin-bottom: 0em;margin:-0px 0 -1px -40px; border: solid 1px rgba(0, 0, 0, 0.0)">
+										 <div id="map"></div>
+ <script>
+
+
+var allMarkers = [];
+function clickMarker() {
+  if (this.getAnimation() !== null) {
+    this.setAnimation(null);
+	 $("#stationdetails").html("keine Station ausgewählt");
+  } else {
+	  for (var i =0; i < allMarkers.length; i++) {
+		 allMarkers[i].setAnimation(null);
+		
+	  }
+	 
+	$.post('/stationdetails/', {csrfmiddlewaretoken: "{{ csrf_token }}",  station : this.stationId}, function(data) {
+					$("#stationdetails").html(data);
+			});	
+    this.setAnimation(google.maps.Animation.BOUNCE);
+  }
+}
+
+
+function initMap() {
+				 directionsService = new google.maps.DirectionsService;
+			  directionsDisplay = new google.maps.DirectionsRenderer({
+		supressMarkers: true,
+		  markerOptions : {
+	
+		opacity: 0,
+	
+	  }
+	  
+	  });
+
+			    directionsDisplay2 = new google.maps.DirectionsRenderer({
+		supressMarkers: true,
+		suppressBicyclingLayer: true,
+	  markerOptions : {
+		
+		opacity: 1,
+		icon: "/static/icon-station.png",
+		zIndex: 1,
+	  },
+    polylineOptions: {
+      strokeColor: "#2249a3",
+	
+    }
+  });
+				  directionsDisplay3 = new google.maps.DirectionsRenderer({
+		supressMarkers: true,  
+		markerOptions : {
+	
+		opacity: 0,
+	
+	  }});
+			  map = new google.maps.Map(document.getElementById('map'), {
+				zoom: 14,
+				center: {lat: 53.5545433, lng: 10.0211257}
+			  });
+			  directionsDisplay.setMap(map);
+
+
+				
+				
+				
+				 {% for station in stationen %}
+				 var myLatLng = {lat: {{station.location_lat}}, lng: {{station.location_lon}}};
+				 var icon = {
+    url: "{{station.bikes|getBikeIcon}}", // url
+    scaledSize: new google.maps.Size(30, 30), // scaled size
+    origin: new google.maps.Point(0,0), // origin
+    anchor: new google.maps.Point(0, 0) // anchor
+};
+				  var marker = new google.maps.Marker({
+					position: myLatLng,
+					map: map,
+					icon: icon,
+					title: "{{station.name}}"
+				  });
+				marker.stationId = {{station.id}};
+				marker.type = 1;
+				marker.addListener('click', clickMarker);
+				allMarkers.push(marker);
+				{% endfor %}		
+				
+				
+				 var myLatLng = {lat: 53.5545433, lng: 10.0211257};
+				 var icon = {
+   
+    scaledSize: new google.maps.Size(300, 300), // scaled size
+    origin: new google.maps.Point(0,0), // origin
+    anchor: new google.maps.Point(0, 0) // anchor
+};
+				  startMarker = new google.maps.Marker({
+					position: myLatLng,
+					map: map,
+					label: "S",
+					opacity: 0,
+				
+				  });
+				
+				allMarkers.push(marker);
+				
+				
+				 var myLatLng = {lat: 53.5545433, lng: 10.0211257};
+				 var icon = {
+  
+    scaledSize: new google.maps.Size(30, 30), // scaled size
+    origin: new google.maps.Point(0,0), // origin
+    anchor: new google.maps.Point(0, 0) // anchor
+};
+				  endMarker = new google.maps.Marker({
+					position: myLatLng,
+					label: "Z",
+					map: map,
+					opacity: 0,
+				
+					
+				  });
+			
+				allMarkers.push(marker);
+
+				
+	}
+
+
+
+function calculateAndDisplayRoute(directionsService, map, directionsDisplay, directionsDisplay2, directionsDisplay3) {
+$.post('/route/', {csrfmiddlewaretoken: "{{ csrf_token }}",  origin : $("#startinput").val(),  destination : $("#endinput").val()}, function(data) {
+	
+		var str = JSON.stringify(data, null, 2); // spacing level = 2
+		
+	
+		if(data.length == 1) {		
+		  legcount = data[0].routes[0].legs.length
+		 
+		  directionsService.route({
+			origin: {lat: data[0].routes[0].legs[0].start_location.lat, lng: data[0].routes[0].legs[0].start_location.lng},
+			destination: {lat: data[0].routes[0].legs[legcount-1].end_location.lat, lng: data[0].routes[0].legs[legcount-1].end_location.lng},
+			travelMode: google.maps.TravelMode.BICYCLING
+		  }, function(response, status) {
+			if (status === google.maps.DirectionsStatus.OK) {
+			var str = JSON.stringify(response, null, 2); // spacing level = 2
+				console.log(str)
+			  directionsDisplay.setDirections(response);
+			  comma = response.routes[0].legs[0].end_address.indexOf(",");
+				$("#routenlen").html(response.routes[0].legs[0].distance.text)
+				$("#routendur").html(response.routes[0].legs[0].duration.text)
+					$("#routenziel").html(response.routes[0].legs[0].end_address.substring(0, comma));
+				$("#routendesc").html('<img src="/static/walking.png" alt="walking" height="32" width="32">');
+				
+				$("#routendesc2").html('');
+					$("#routenziel2").html("");
+				 $("#routenziel3").html("");
+				$("#routendesc3").html('');
+					$("#routenlen2").html("")
+				$("#routendur2").html("")
+					$("#routenlen3").html("")
+				$("#routendur3").html("")
+			} else {
+			  window.alert('Directions request failed due to ' + status);
+			}
+		  });
+		  
+		  
+		    directionsDisplay.setMap(map);
+			directionsDisplay2.setMap(null);
+			directionsDisplay3.setMap(null);  
+			
+		} else if(data.length == 3) {
+		
+		
+		
+		
+		
+		  legcount = data[0].routes[0].legs.length
+			startMarker.setOptions({opacity : 1, position:{lat: data[0].routes[0].legs[0].start_location.lat, lng: data[0].routes[0].legs[0].start_location.lng}});
+		  directionsService.route({
+			origin: {lat: data[0].routes[0].legs[0].start_location.lat, lng: data[0].routes[0].legs[0].start_location.lng},
+			destination: {lat: data[0].routes[0].legs[legcount-1].end_location.lat, lng: data[0].routes[0].legs[legcount-1].end_location.lng},
+			travelMode: google.maps.TravelMode.WALKING
+		  }, function(response, status) {
+			if (status === google.maps.DirectionsStatus.OK) {
+			var str = JSON.stringify(response, null, 2); // spacing level = 2
+				console.log(str)
+			  directionsDisplay.setDirections(response);
+				$("#routenlen").html(response.routes[0].legs[0].distance.text)
+				$("#routendur").html(response.routes[0].legs[0].duration.text)
+				comma = response.routes[0].legs[0].end_address.indexOf(",");
+				$("#routendesc").html('<img src="/static/walking.png" alt="walking" height="32" width="32">');
+				$("#routenziel").html(response.routes[0].legs[0].end_address.substring(0, comma));
+			} else {
+			  window.alert('Directions request failed due to ' + status);
+			}
+		  });
+		  
+		  
+		  
+		  
+		  
+		  
+		  
+			routeno = 1
+		    legcount = data[routeno].routes[0].legs.length
+		 
+		  directionsService.route({
+			origin: {lat: data[routeno].routes[0].legs[0].start_location.lat, lng: data[routeno].routes[0].legs[0].start_location.lng},
+			destination: {lat: data[routeno].routes[0].legs[legcount-1].end_location.lat, lng: data[routeno].routes[0].legs[legcount-1].end_location.lng},
+			travelMode: google.maps.TravelMode.BICYCLING
+		  }, function(response, status) {
+			if (status === google.maps.DirectionsStatus.OK) {
+			var str = JSON.stringify(response, null, 2); // spacing level = 2
+				console.log(str)
+			  directionsDisplay2.setDirections(response);
+				$("#routenlen2").html(response.routes[0].legs[0].distance.text)
+				$("#routendur2").html(response.routes[0].legs[0].duration.text)
+				comma = response.routes[0].legs[0].end_address.indexOf(",");
+				
+				$("#routendesc2").html('<i class="fa fa-bicycle" style="font-size:2em;color:black" aria-hidden="true"></i>');
+				$("#routenziel2").html(response.routes[0].legs[0].end_address.substring(0, comma));
+			} else {
+			  window.alert('Directions request failed due to ' + status);
+			}
+		  });
+		  
+		  
+		  
+		  routeno = 2
+		    legcount = data[2].routes[0].legs.length
+		 endMarker.setOptions({opacity : 1, position:{lat: data[2].routes[0].legs[0].end_location.lat, lng: data[2].routes[0].legs[0].end_location.lng}});
+		  directionsService.route({
+			origin: {lat: data[routeno].routes[0].legs[0].start_location.lat, lng: data[routeno].routes[0].legs[0].start_location.lng},
+			destination: {lat: data[routeno].routes[0].legs[legcount-1].end_location.lat, lng: data[routeno].routes[0].legs[legcount-1].end_location.lng},
+			travelMode: google.maps.TravelMode.WALKING
+		  }, function(response, status) {
+			if (status === google.maps.DirectionsStatus.OK) {
+			var str = JSON.stringify(response, null, 2); // spacing level = 2
+				console.log(str)
+			  directionsDisplay3.setDirections(response);
+				$("#routenlen3").html(response.routes[0].legs[0].distance.text)
+				$("#routendur3").html(response.routes[0].legs[0].duration.text)
+				comma = response.routes[0].legs[0].end_address.indexOf(",");
+				$("#routendesc3").html('<img src="/static/walking.png" alt="walking" height="32" width="32">');
+				$("#routenziel3").html(response.routes[0].legs[0].end_address.substring(0, comma));
+				
+			} else {
+			  window.alert('Directions request failed due to ' + status);
+			}
+		  });
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		  directionsDisplay.setMap(map);
+			directionsDisplay2.setMap(map);
+			directionsDisplay3.setMap(map);  
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		}else {
+			alert("multiple routes" + str(data.length))
+		}
+});	
+
+
+  }
+  function onChangeHandler() {	
+    calculateAndDisplayRoute(directionsService, map, directionsDisplay, directionsDisplay2, directionsDisplay3);
+  };
+
+
+
+
+
+
+
+
+  
+
+    </script>
+											 
+
+										</section>
+											  
+
+		<div class="row" style="margin-top:2em; border: solid 1px rgba(0, 0, 0, 0.2)">
+		<table style="margin: 0">
+		<tr>
+		<td><b style="float:left;margin:0;padding: 0;padding-left: 1em;">{{ wetterStationname }}:</b>
+		</td>
+		<td>	<b style="float:right;margin:0;padding: 0;padding-right: 1em;">{{ wetterDescDetail }}</b>
+		</td>
+		</tr></table>
+								
+				
+					</br>
+							<div class="3u 6u(medium) 12u$(small)" style="padding: 0">
+
+								<!-- Links -->
+									<section class="widget links" style="text-align:center">
+										<b style="font-size:small">Temperatur: {{temperatur|getlastitem}} (C°)</b>
+																					<div>
+											 <canvas id="myChart2"></canvas>
+											 </div>
+											  <script>
+Chart.defaults.global.legend.display = false;
+var ctx = document.getElementById('myChart2').getContext('2d');
+var myChart = new Chart(ctx, {
+  type: 'line',
+  data: {
+    labels: {{ labels|safe }},
+    datasets: [{
+      label: 'C° ',
+	  fill: false,
+      data:  {{temperatur}},
+      backgroundColor: "rgba(244, 116, 66,1)",
+	   lineColor: "rgba(244, 116, 66,1)",
+	   
+    pointColor: "rgba(244, 116, 66,1)",
+		} ]
+  },
+	options: { 
+	scales: {
+				xAxes: [{
+					color: 'blue',
+					gridLines: {
+						display: false,
+						color: "#CCC8BC",
+						lineWidth: 3,
+						zeroLineWidth: 3,
+						zeroLineColor: "#2C292E",
+						drawTicks: true,
+						tickMarkLength: 3
+					},
+					ticks: {
+						fontFamily: "'Open Sans', sans-serif",
+						fontSize: 12,
+						fontStyle: "bold",
+						fontColor: "#545454",
+						color: 'blue'
+					}
+				}],
+				yAxes: [{
+					color: 'blue',
+					gridLines: {
+						display: true,
+						color: "#CCC8BC",
+						lineWidth: 3,
+						drawTicks: true,
+						tickMarkLength: 3
+					},
+					ticks: {
+						min: {{ temperatur|getymin }},
+						max:  {{ temperatur|getymax }},
+						fontFamily: "'Open Sans', sans-serif",
+						fontSize: 12,
+						fontStyle: "bold",
+						fontColor: "#545454",
+					}
+				}]
+			},
+    responsive: true,
+    maintainAspectRatio: false,
+	height: 260
+	}
+});
+
+
+    </script>
+									</section>
+
+							</div>
+							<div class="3u 6u$(medium) 12u$(small)" style="padding: 0">
+
+								<!-- Links -->
+									<section class="widget links" style="text-align:center">
+										<b style="font-size:small">Luftdruck: {{luftdruck|getlastitem}} (Pa)</b>
+																															<div>
+											 <canvas id="myChart3"></canvas>
+											 </div>
+											  <script>
+Chart.defaults.global.legend.display = false;
+var ctx = document.getElementById('myChart3').getContext('2d');
+var myChart = new Chart(ctx, {
+  type: 'bar',
+  data: {
+	  labels: {{ labels|safe }},
+    datasets: [{
+      label: 'Pascal',
+      data: {{luftdruck}},
+      backgroundColor: "rgba(66, 134, 244,0.7)"
+    }, ]
+  },
+	options: { 
+	
+  	scales: {
+				xAxes: [{
+					color: 'blue',
+					gridLines: {
+						display: false,
+						color: "#CCC8BC",
+						lineWidth: 3,
+						zeroLineWidth: 3,
+						zeroLineColor: "#2C292E",
+						drawTicks: true,
+						tickMarkLength: 3
+					},
+					ticks: {
+						fontFamily: "'Open Sans', sans-serif",
+						fontSize: 12,
+						fontStyle: "bold",
+						fontColor: "#545454",
+						color: 'blue'
+					}
+				}],
+				yAxes: [{
+					color: 'blue',
+					gridLines: {
+						display: true,
+						color: "#CCC8BC",
+						lineWidth: 3,
+						drawTicks: true,
+						tickMarkLength: 3
+					},
+					ticks: {
+						min: {{luftdruck|getymin}},
+						max: {{luftdruck|getymax}},
+						fontFamily: "'Open Sans', sans-serif",
+						fontSize: 12,
+						fontStyle: "bold",
+						fontColor: "#545454",
+					}
+				}]
+			},
+    responsive: true,
+    maintainAspectRatio: false,
+	height: 260
+	}
+});
+
+
+    </script>
+									</section>
+
+							</div>
+							
+							
+							
+									<div class="3u 6u$(medium) 12u$(small)" style="padding: 0">
+
+								<!-- Links -->
+									<section class="widget links" style="text-align:center">
+										<b style="font-size:small">Luftfeuchtigkeit: {{luftfeuchte|getlastitem}} (%)</b>
+																															<div>
+											 <canvas id="myChart4"></canvas>
+											 </div>
+											  <script>
+Chart.defaults.global.legend.display = false;
+var ctx = document.getElementById('myChart4').getContext('2d');
+var myChart = new Chart(ctx, {
+  type: 'line',
+  data: {
+    labels: {{labels|safe}},
+    datasets: [{
+      label: '%',
+      data: {{luftfeuchte}},
+      backgroundColor: "rgba(66, 66, 244,0.7)"
+    }, ]
+  },
+	options: { 
+scales: {
+				xAxes: [{
+					color: 'blue',
+					gridLines: {
+						display: false,
+						color: "#CCC8BC",
+						lineWidth: 3,
+						zeroLineWidth: 3,
+						zeroLineColor: "#2C292E",
+						drawTicks: true,
+						tickMarkLength: 3
+					},
+					ticks: {
+						fontFamily: "'Open Sans', sans-serif",
+						fontSize: 12,
+						fontStyle: "bold",
+						fontColor: "#545454",
+						color: 'blue'
+					}
+				}],
+				yAxes: [{
+					color: 'blue',
+					gridLines: {
+						display: true,
+						color: "#CCC8BC",
+						lineWidth: 3,
+						drawTicks: true,
+						tickMarkLength: 3
+					},
+					ticks: {
+						min: {{ luftfeuchte|getymin }},
+						max:  {{ luftfeuchte|getymaxcent }},
+						fontFamily: "'Open Sans', sans-serif",
+						fontSize: 12,
+						fontStyle: "bold",
+						fontColor: "#545454",
+					}
+				}]
+			},
+    responsive: true,
+    maintainAspectRatio: false,
+	height: 260
+	}
+});
+
+
+    </script>
+									</section>
+
+							</div>
+							
+							
+							
+							
+							
+							<div class="3u 6u$(medium) 12u$(small)" style="padding: 0">
+
+								<!-- Links -->
+									<section class="widget links" style="text-align:center">
+										<b  style="font-size:small">Windgeschwindigkeit  {{windgeschwindigkeit|getlastitem}} (m/s)</b>
+																															<div>
+											 <canvas id="myChart5"></canvas>
+											 </div>
+											  <script>
+Chart.defaults.global.legend.display = false;
+var ctx = document.getElementById('myChart5').getContext('2d');
+var myChart = new Chart(ctx, {
+  type: 'line',
+  data: {
+    labels: {{labels|safe}},
+    datasets: [{
+      label: 'm/s',
+      data: {{windgeschwindigkeit}},
+      backgroundColor: "rgba(66, 134, 120,0.7)"
+    }, ]
+  },
+	options: { 
+	scales: {
+				xAxes: [{
+					color: 'blue',
+					gridLines: {
+						display: false,
+						color: "#CCC8BC",
+						lineWidth: 3,
+						zeroLineWidth: 3,
+						zeroLineColor: "#2C292E",
+						drawTicks: true,
+						tickMarkLength: 3
+					},
+					ticks: {
+						fontFamily: "'Open Sans', sans-serif",
+						fontSize: 12,
+						fontStyle: "bold",
+						fontColor: "#545454",
+						color: 'blue'
+					}
+				}],
+				yAxes: [{
+					color: 'blue',
+					gridLines: {
+						display: true,
+						color: "#CCC8BC",
+						
+						drawTicks: true,
+					
+					},
+					ticks: {
+						
+						fontFamily: "'Open Sans', sans-serif",
+						fontSize: 12,
+						fontStyle: "bold",
+						fontColor: "#545454",
+					}
+				}]
+			},
+    responsive: true,
+    maintainAspectRatio: false,
+	height: 260
+	}
+});
+
+
+    </script>
+									</section>
+
+							</div>
+							
+					
+						</div>
+										</article>
+
+								</div>
+							</div>
+							<div class="4u 12u$(medium)">
+								<div id="sidebar" style="border:solid 1px rgba(0,0,0,0.2); padding: 0.5em">
+
+										<h4>Auswahl:</h4>
+										
+									
+										<div id="stationdetails" style="">keine Station ausgewählt</div>
+								<div id="stationdetailsbutton" style="width:100%;display:block;margin-top:1em;text-align:center;">
+		<a href="#" id="setStart" style="padding:0.2em 0.6em;font-size: 0.8em" class="button small icon fa-bicycle">als Start</a>
+		<a href="#" id="setZiel" style="padding:0.2em 0.6em;font-size: 0.8em" class="button small icon fa-bullseye">als Ziel</a>
+		
+		</div>
+		</div>
+										
+									<!-- Sidebar -->
+									<h4>Route</h4>
+									<div style="border:solid 1px rgba(0,0,0,0.2); padding: 1em">
+									<table><tr>
+									<td><span id="routendesc"> </span></td>
+									<td><span id="routenziel"> </span></td>
+									<td><span id="routenlen"></span></td>
+									<td><span id="routendur"></span></td>
+									</tr><tr>
+									<td><span id="routendesc2"></span></td>
+									<td><span id="routenziel2"> </span></td>
+									<td><span id="routenlen2"></span></td>
+									<td><span id="routendur2"></span></td>
+									</tr><tr>
+									<td><span id="routendesc3"> </span></td>
+									<td><span id="routenziel3"> </span></td>
+									<td><span id="routenlen3"></span></td>
+									<td><span id="routendur3"></span></td>
+									</tr>
+									</table>
+ <div id="floating-panel" >
+ <div class="ui-widget">
+  <label for="tags"><b>Start:</b> <a href="#" id="selectStart" title="select station"><i class="fa fa-external-link" aria-hidden="true"></i></a></label>
+  <input style="width:100%" id="startinput">
+
+</div>
+ <div class="ui-widget">
+  <label for="tags"><b>Ziel:<b> <a href="#" id="selectZiel" title="select station"><i class="fa fa-external-link" aria-hidden="true"></i></a></label>
+  <input style="width:100%"  id="endinput">
+</div>
+
+	<div style="width:100%;display:block;margin-top:1em;text-align:center;">
+		<a href="#" id="getRouteButton" style="padding:0.2em 0.6em;font-size: 0.8em" class="button small icon fa-bicycle">Start</a>
+		<script>
+	
+  document.getElementById('getRouteButton').addEventListener('click', onChangeHandler);
+
+	 	</script>
+		<a href="#" id="resetRouteButton" style="padding:0.2em 0.6em;font-size: 0.8em" class="button small icon fa-undo">Reset</a>
+		
+		<input id ="bikelaneCheck" type="checkbox" name="bikelanes" />
+		
+		
+		</div>
+    </div>
+	
+	</div>
+										<section>
+										<br>
+											<table><tr>
+											<td>
+											<b>Fahrradstationen</b>
+											</td>
+											<td>
+											{{ stationen.count }}
+											</td>
+											</tr>
+											
+										
+										</section>
+
+								</div>
+								
+							
+							</div>
+						</div>
+{%endblock%}
+{%block scripts%}
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAaPdXad6DM2LV762xhLs1vcoI10ARS1IA&callback=initMap"
+        async defer></script>
+		<script>
+	
+		function resetRoute() {
+			window.alert("reset");
+		}
+		function setStart() {
+			$("#startinput").val($("#stationNameText").html())
+			
+		}
+		function setZiel() {
+			$("#endinput").val($("#stationNameText").html())
+		}
+		function selectZiel() {
+			$.post('/stationdetails/', {csrfmiddlewaretoken: "{{ csrf_token }}",  station : $("#endinput").val()}, function(data) {
+					$("#stationdetails").html(data);
+			});	
+		}
+		function selectStart() {
+			$.post('/stationdetails/', {csrfmiddlewaretoken: "{{ csrf_token }}",  station : $("#startinput").val()}, function(data) {
+					$("#stationdetails").html(data);
+			});	
+		}
+		$("#selectZiel").on("click", selectZiel);
+		$("#selectStart").on("click", selectStart);
+		
+		$("#resetRouteButton").on("click", resetRoute);
+		$("#setStart").on("click", setStart);
+		$("#setZiel").on("click", setZiel);
+		</script>
+		
+		  <script>
+
+  
+  $( function() {
+    var availableTags = [
+	
+	{% for s in stationen %}
+    "{{s.name}}"
+	{% if forloop.last %}{%else%},{% endif %}
+	  
+	{%endfor%}	  
+	
+    ];
+    $( "#startinput" ).autocomplete({
+      source: availableTags
+    });
+	 $( "#endinput" ).autocomplete({
+      source: availableTags
+    });
+  } );
+  </script>
+{%endblock%}

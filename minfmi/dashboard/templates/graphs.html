@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{%block content%}
+						<div class="row 200%">
+							<div class="8u 12u$(medium)">
+								<div id="content">
+
+									<!-- Content -->
+										<article>
+
+											<h2>Graphen</h2>
+
+											<p>Phasellus quam turpis, feugiat sit amet ornare in, hendrerit in lectus.
+											Praesent semper mod quis eget mi. Etiam eu ante risus. Aliquam erat volutpat.
+											Aliquam luctus et mattis lectus sit amet pulvinar. Nam turpis nisi
+											consequat etiam lorem ipsum dolor sit amet nullam.</p>
+
+											<h3>mit chartjs</h3>
+											
+
+											  <canvas id="myChart"></canvas>
+
+ <script>
+var ctx = document.getElementById('myChart').getContext('2d');
+var myChart = new Chart(ctx, {
+  type: 'line',
+  data: {
+    labels: ['M', 'T', 'W', 'T', 'F', 'S', 'S'],
+    datasets: [{
+      label: 'apples',
+      data: [12, 19, 3, 17, 6, 3, 7],
+      backgroundColor: "rgba(153,255,51,0.4)"
+    }, {
+      label: 'oranges',
+      data: [2, 29, 5, 5, 2, 3, 10],
+      backgroundColor: "rgba(255,153,0,0.4)"
+    }]
+  }
+});
+
+    </script>
+
+
+										</article>
+
+								</div>
+							</div>
+							<div class="4u 12u$(medium)">
+								<div id="sidebar">
+
+									<!-- Sidebar -->
+										<section>
+											<h3>verschiedener Arten</h3>
+												  <canvas id="myChart2"></canvas>
+
+ <script>
+var ctx = document.getElementById('myChart2').getContext('2d');
+var myChart = new Chart(ctx, {
+  type: 'bar',
+  data: {
+    labels: ['M', 'T', 'W', 'T', 'F', 'S', 'S'],
+    datasets: [{
+      label: 'apples',
+      data: [12, 19, 3, 17, 6, 3, 7],
+      backgroundColor: "rgba(153,255,51,0.4)"
+    }, {
+      label: 'oranges',
+      data: [2, 29, 5, 5, 2, 3, 10],
+      backgroundColor: "rgba(255,153,0,0.4)"
+    }]
+  }
+});
+
+    </script>
+											<footer>
+												<a href="/rest" class="button icon fa-info-circle">RESTful</a>
+											</footer>
+										</section>
+
+										<section>
+											<h3>Subheading</h3>
+											<ul class="style2">
+												<li><a href="#">Amet turpis, feugiat et sit amet</a></li>
+												<li><a href="#">Ornare in hendrerit in lectus</a></li>
+												<li><a href="#">Semper mod quis eget mi dolore</a></li>
+												<li><a href="#">Quam turpis feugiat sit dolor</a></li>
+												<li><a href="#">Amet ornare in hendrerit in lectus</a></li>
+												<li><a href="#">Semper mod quisturpis nisi</a></li>
+											</ul>
+										</section>
+
+								</div>
+							</div>
+						</div>
+{%endblock%}
+{%block scripts%}
+
+{%endblock%}

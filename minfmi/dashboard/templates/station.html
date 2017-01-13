@@ -1,0 +1,240 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{%block content%}
+						<div class="row 200%">
+							<div class="8u 12u$(medium)">
+								<div id="content">
+
+									<!-- Content -->
+										<article>
+
+											
+						
+											
+										<section>
+										
+										<div id="stationdetails" style="">keine Station ausgewählt</div>
+											<table> 
+											
+									
+											<tr>
+											<td ><b>{{ wetterStationname }}:</b></td><td> <img src="http://openweathermap.org/img/w/{{wetterIcon}}.png" alt="{{ wetterDesc }}" title="{{ wetterDesc }}"></td>
+</tr><tr>
+								
+											<td >{{ wetterDesc }}:</td>
+											<td >{{ wetterDescDetail }}</td>
+											</tr>
+											
+											
+											
+											
+											
+											
+											
+											
+											
+											
+											
+											
+											
+								
+											<tr>
+										
+											<td>  <div style="width:20em; height:15em;"><b>Temperatur</b><canvas id="myChart3"></canvas></div>
+
+ <script>
+ Chart.defaults.global.legend.display = false;
+var ctx = document.getElementById('myChart3').getContext('2d');
+var myChart = new Chart(ctx, {
+  type: 'line',
+  data: {
+    labels: {{labels|safe}},
+    datasets: [{
+      label: 'C° ',
+      data: {{ temperatur }},
+      backgroundColor: "rgba(244, 116, 66,0.4)"
+    } ]
+  },
+	options: { 
+    responsive: true,
+    maintainAspectRatio: true,
+	
+	}
+});
+
+    </script></td>											
+										
+										
+											<td>						
+																						<div style="width:20em; height:15em;"><b>Windgeschwindigkeit</b>
+											 <canvas id="myChart4"></canvas>
+											 </div>
+											  <script>
+Chart.defaults.global.legend.display = false;
+var ctx = document.getElementById('myChart4').getContext('2d');
+var myChart = new Chart(ctx, {
+  type: 'line',
+  data: {
+    labels: {{labels|safe}},
+    datasets: [{
+      label: 'C° ',
+      data: {{ windgeschwindigkeit }},
+      backgroundColor: "rgba(8, 136, 196, 0.4)"
+    } ]
+  },
+	options: { 
+    responsive: true,
+    maintainAspectRatio: true,
+	}
+});
+
+
+    </script></td>											
+											</tr>	
+											
+											
+											
+											
+											
+											
+											
+											
+											
+											
+											
+											
+											
+											
+											<tr>
+										
+											<td>  <div style="width:20em; height:15em;"><b>Luftdruck</b><canvas id="myChart2"></canvas></div>
+
+ <script>
+ Chart.defaults.global.legend.display = false;
+var ctx = document.getElementById('myChart2').getContext('2d');
+var myChart = new Chart(ctx, {
+  type: 'bar',
+  data: {
+    labels: {{labels|safe}},
+    datasets: [{
+      label: 'C° ',
+      data: {{luftdruck}},
+      backgroundColor: "rgba(144, 216, 66,0.4)"
+    } ]
+  },
+	options: { 
+    responsive: true,
+    maintainAspectRatio: true,
+	
+	}
+});
+
+    </script></td>											
+										
+										
+											<td>						
+																						<div style="width:20em; height:15em;"><b>Luftfeuchtigkeit</b>
+											 <canvas id="myChart1"></canvas>
+											 </div>
+											  <script>
+Chart.defaults.global.legend.display = false;
+var ctx = document.getElementById('myChart1').getContext('2d');
+var myChart = new Chart(ctx, {
+  type: 'line',
+  data: {
+    labels: {{labels|safe}},
+    datasets: [{
+      label: 'C° ',
+      data: {{luftfeuchte}},
+      backgroundColor: "rgba(122, 236, 196, 0.4)"
+    } ]
+  },
+	options: { 
+    responsive: true,
+    maintainAspectRatio: true,
+	}
+});
+
+
+    </script></td>											
+											</tr>
+											
+											
+											
+											</table>
+				
+										</section>
+
+
+
+
+										</article>
+
+								</div>
+							</div>
+							<div class="4u 12u$(medium)">
+								<div id="sidebar"><div id="map" style=""></div>
+
+									<!-- Sidebar -->				 
+ <script>
+
+
+function initMap() {
+    directionsService = new google.maps.DirectionsService;
+   directionsDisplay = new google.maps.DirectionsRenderer;
+   map = new google.maps.Map(document.getElementById('map'), {
+    zoom: 15,
+    center: {lat: {{station.location_lat}}, lng: {{station.location_lon}}}
+  });
+  directionsDisplay.setMap(map);
+	var myLatLng = {lat: {{station.location_lat}}, lng: {{station.location_lon}}};
+	  var marker = new google.maps.Marker({
+		position: myLatLng,
+		map: map,
+		title: "{{station.name}}"
+	  });
+
+}
+
+function calculateAndDisplayRoute(directionsService, directionsDisplay) {
+
+  directionsService.route({
+    origin: {lat: {{station.location_lat}}, lng: {{station.location_lon}}},
+    destination: document.getElementById('end').value,
+    travelMode: google.maps.TravelMode.BICYCLING
+  }, function(response, status) {
+    if (status === google.maps.DirectionsStatus.OK) {
+	var str = JSON.stringify(response, null, 2); // spacing level = 2
+	console.log(str)
+	delete response.overview_path
+      directionsDisplay.setDirections(response);
+		$("#routenlen").html(response.routes[0].legs[0].distance.text)
+		$("#routendur").html(response.routes[0].legs[0].duration.text)
+    } else {
+      window.alert('Directions request failed due to ' + status);
+    }
+  });
+
+
+  }
+ 
+	
+    </script>
+
+									
+								</div>
+							</div>
+						</div>
+{%endblock%}
+{%block scripts%}
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAaPdXad6DM2LV762xhLs1vcoI10ARS1IA&callback=initMap"
+        async defer></script>
+									<script>
+											$(document).ready(function () {
+	$.post('/stationdetails/', {csrfmiddlewaretoken: "{{ csrf_token }}",  station : {{station.id}}}, function(data) {
+					$("#stationdetails").html(data);
+			});	
+});
+											
+    </script>
+{%endblock%}

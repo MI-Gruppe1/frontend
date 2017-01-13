@@ -1,0 +1,255 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{%block content%}
+						<div class="row 200%">
+							<div class="8u 12u$(medium)">
+								<div id="content">
+
+									<!-- Content -->
+										<article>
+
+											<h2>{{station.name}}</h2>
+
+						
+											
+										<section>
+											<table> 
+											
+											
+											
+											
+											<tr>
+										
+											<td>  <div style="width:20em; height:15em;"><b>Temperatur</b><canvas id="myChart3"></canvas></div>
+
+ <script>
+ Chart.defaults.global.legend.display = false;
+var ctx = document.getElementById('myChart3').getContext('2d');
+var myChart = new Chart(ctx, {
+  type: 'line',
+  data: {
+    labels: ['06:00', '07:00', '8:00', '9:00', '10:00', '11:00', '12:00'],
+    datasets: [{
+      label: 'C° ',
+      data: [3, 5, 6, 7, 6, 6, 7],
+      backgroundColor: "rgba(244, 116, 66,0.4)"
+    } ]
+  },
+	options: { 
+    responsive: true,
+    maintainAspectRatio: true,
+	
+	}
+});
+
+    </script></td>									
+										
+										
+											<td>						
+																						<div style="width:20em; height:15em;"><b>Windgeschwindigkeit</b>
+											 <canvas id="myChart4"></canvas>
+											 </div>
+											  <script>
+Chart.defaults.global.legend.display = false;
+var ctx = document.getElementById('myChart4').getContext('2d');
+var myChart = new Chart(ctx, {
+  type: 'line',
+  data: {
+    labels: ['13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00'],
+    datasets: [{
+      label: 'C° ',
+      data: [7, 8, 8, 5, 6, 4, 6],
+	  backgroundColor: "rgba(4, 116, 66,0.4)"
+    } ]
+  },
+	options: { 
+    responsive: true,
+    maintainAspectRatio: true,
+	}
+});
+
+
+    </script></td>											
+											</tr>	
+											
+											
+											
+											
+<tr>
+										
+											<td>  <div style="width:20em; height:15em;"><b>Feuchtigkeit</b><canvas id="myChart5"></canvas></div>
+
+ <script>
+ Chart.defaults.global.legend.display = false;
+var ctx = document.getElementById('myChart5').getContext('2d');
+var myChart = new Chart(ctx, {
+  type: 'line',
+  data: {
+    labels: ['06:00', '07:00', '8:00', '9:00', '10:00', '11:00', '12:00'],
+    datasets: [{
+      label: 'C° ',
+      data: [3, 5, 6, 7, 6, 6, 7],
+
+      backgroundColor: "rgba(8, 136, 196, 0.4)"
+    } ]
+  },
+	options: { 
+    responsive: true,
+    maintainAspectRatio: true,
+	
+	}
+});
+
+    </script></td>									
+										
+										
+											<td>						
+																						<div style="width:20em; height:15em;"><b>Luftdruck</b>
+											 <canvas id="myChart6"></canvas>
+											 </div>
+											  <script>
+Chart.defaults.global.legend.display = false;
+var ctx = document.getElementById('myChart6').getContext('2d');
+var myChart = new Chart(ctx, {
+  type: 'line',
+  data: {
+    labels: ['13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00'],
+    datasets: [{
+      label: 'C° ',
+      data: [7, 8, 8, 5, 6, 4, 6],
+      backgroundColor: "rgba(118, 136, 196, 0.4)"
+    } ]
+  },
+	options: { 
+    responsive: true,
+    maintainAspectRatio: true,
+	}
+});
+
+
+    </script></td>											
+											</tr>												
+											
+											
+					
+
+
+
+
+
+
+
+
+
+
+
+
+					
+											
+											
+											
+											
+											
+											
+											
+											
+											
+											
+											</table>
+											
+										</section>
+
+
+
+
+										</article>
+
+								</div>
+							</div>
+							<div class="4u 12u$(medium)">
+								<div id="sidebar">
+
+									<!-- Sidebar -->				 <div id="map"></div>
+ <script>
+
+
+function initMap() {
+    directionsService = new google.maps.DirectionsService;
+   directionsDisplay = new google.maps.DirectionsRenderer;
+   map = new google.maps.Map(document.getElementById('map'), {
+    zoom: 15,
+    center: {lat: {{station.location_lat}}, lng: {{station.location_lon}}}
+  });
+  directionsDisplay.setMap(map);
+	var myLatLng = {lat: {{station.location_lat}}, lng: {{station.location_lon}}};
+	  var marker = new google.maps.Marker({
+		position: myLatLng,
+		map: map,
+		title: "{{station.name}}"
+	  });
+
+}
+
+function calculateAndDisplayRoute(directionsService, directionsDisplay) {
+
+  directionsService.route({
+    origin: {lat: {{station.location_lat}}, lng: {{station.location_lon}}},
+    destination: document.getElementById('end').value,
+    travelMode: google.maps.TravelMode.BICYCLING
+  }, function(response, status) {
+    if (status === google.maps.DirectionsStatus.OK) {
+      directionsDisplay.setDirections(response);
+		$("#routenlen").html(response.routes[0].legs[0].distance.text)
+		$("#routendur").html(response.routes[0].legs[0].duration.text)
+    } else {
+      window.alert('Directions request failed due to ' + status);
+    }
+  });
+
+
+  }
+  function onChangeHandler() {	
+    calculateAndDisplayRoute(directionsService, directionsDisplay);
+  };
+  document.getElementById('end').addEventListener('change', onChangeHandler);
+
+		
+    </script>
+
+										<section>
+<table> 
+											
+											
+											<tr>
+											<td><b>Wetter Beschreibung</b></td>
+											<td>broken clouds</td>
+											</tr>
+											<tr>
+											<td><b>Temperatur</b></td>
+											<td>0.07 C°</td>
+											</tr>
+											<tr>
+											<td><b>Luftdruck</b></td>
+											<td>1026</td>
+											</tr>
+											
+											<tr>
+											<td><b>Feuchtigkeit</b></td>
+											<td>92</td>
+											</tr>
+											
+											<tr>
+											<td><b>Wind</b></td>
+											<td>1.35 km/h</td>
+											</tr></table>
+										</section>
+
+								</div>
+							</div>
+						</div>
+{%endblock%}
+{%block scripts%}
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAaPdXad6DM2LV762xhLs1vcoI10ARS1IA&callback=initMap"
+        async defer></script>
+		
+{%endblock%}

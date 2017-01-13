@@ -1,0 +1,51 @@
+{% load staticfiles %}
+<table><tr>
+										
+										
+										<td style="text-align:center" colspan=2><a href="/station/{{station.id}}" id="stationNameText">{{ station.name }}</td></a>
+										</tr><tr>
+										<td><b>Fahrräder</b></td>
+										<td style="text-align:right">{{bikes}}	<i class="icon fa-bicycle"></i></td>
+										
+										</tr><tr>
+										<td><b>Vorhersage</b></td>
+										<td style="text-align:right">{%autoescape off%}{{prediction}}{%endautoescape%}</td>
+										
+										</tr>
+										<tr>
+										<td><b>Verlauf</b></td><td></td></tr><tr>
+										<td colspan=2 style="text-align:center">
+										
+										
+										
+										<div style="width:80%;text-align:center">
+											 <canvas id="verlaufchart" ></canvas>
+											 </div>
+											  <script>
+Chart.defaults.global.legend.display = false;
+var ctx = document.getElementById('verlaufchart').getContext('2d');
+var myChart = new Chart(ctx, {
+  type: 'line',
+  data: {
+    labels: {{labels|safe}},
+    datasets: [{
+      label: 'C° ',
+      data:  {{verlauf}},
+      backgroundColor: "rgba(80, 116, 166,0.4)"
+    } ]
+  },
+	options: { 
+    responsive: true,
+    maintainAspectRatio: false,
+	height: 200,
+	}
+});
+
+
+    </script>
+										
+										
+										
+										</td>
+										</tr>
+										</table>
